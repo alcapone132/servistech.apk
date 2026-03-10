@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ServisTech</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #2563EB; --primary-dark: #1D4ED8; --primary-light: #EFF6FF;
+  --secondary: #7C3AED; --success: #10B981; --danger: #EF4444;
+  --bg: #F1F5F9; --surface: #FFFFFF; --surface2: #F8FAFC;
+  --border: #E2E8F0; --text: #0F172A; --text2: #475569; --text3: #94A3B8;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08); --shadow-sm: 0 1px 6px rgba(0,0,0,0.06);
+  --radius: 16px; --radius-sm: 10px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.phone { width: 390px; height: 844px; background: var(--bg); border-radius: 44px; overflow: hidden; position: relative; box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 0 0 2px #333; display: flex; flex-direction: column; }
+.phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 34px; background: #111; border-radius: 0 0 20px 20px; z-index: 1000; }
+.status-bar { height: 44px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 24px 6px; position: absolute; top: 0; left: 0; right: 0; z-index: 99; pointer-events: none; }
+.status-time { font-size: 13px; font-weight: 600; }
+.status-icons { font-size: 11px; display: flex; gap: 4px; }
+.screen-wrap { flex: 1; position: relative; overflow: hidden; margin-top: 44px; }
+.screen { position: absolute; inset: 0; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.32s cubic-bezier(.4,0,.2,1); overflow: hidden; }
+.screen.active { transform: translateX(0); }
+.screen.exit { transform: translateX(-30%); }
+
+/* SPLASH */
+#scSplash { background: linear-gradient(145deg,#1E3A8A,#2563EB,#7C3AED); align-items: center; justify-content: center; gap: 12px; transform: translateX(0); }
+.splash-logo { font-size: 64px; animation: pulse 1.8s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.splash-brand { font-size: 32px; font-weight: 800; color: white; letter-spacing: -1px; }
+.splash-sub { font-size: 14px; color: rgba(255,255,255,.7); }
+.splash-bar-wrap { width: 40px; height: 4px; background: rgba(255,255,255,.2); border-radius: 2px; margin-top: 20px; overflow: hidden; }
+.splash-bar { height: 100%; background: white; border-radius: 2px; width: 0; animation: load 2s ease forwards; }
+@keyframes load { to { width: 100%; } }
+
+/* WELCOME */
+#scWelcome { background: linear-gradient(160deg,#1E3A8A,#2563EB,#7C3AED); }
+.welcome-top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 32px; gap: 12px; }
+.welcome-icon { font-size: 72px; }
+.welcome-title { font-size: 28px; font-weight: 800; color: white; text-align: center; }
+.welcome-desc { font-size: 14px; color: rgba(255,255,255,.75); text-align: center; line-height: 1.6; }
+.welcome-btns { padding: 28px 28px 36px; display: flex; flex-direction: column; gap: 12px; }
+.btn-white { background: white; color: var(--primary); border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; width: 100%; }
+.btn-outline { background: rgba(255,255,255,.15); color: white; border: 2px solid rgba(255,255,255,.4); border-radius: 14px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; width: 100%; }
+.btn-ghost { background: transparent; color: rgba(255,255,255,.8); border: none; padding: 14px; font-size: 15px; cursor: pointer; font-family: inherit; width: 100%; }
+
+/* AUTH */
+#scLogin, #scRegister { background: var(--surface); }
+.auth-header { padding: 20px 20px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+.btn-back { width: 36px; height: 36px; border-radius: 50%; background: var(--bg); border: none; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.auth-header h2 { font-size: 18px; font-weight: 700; color: var(--text); }
+.auth-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; }
+.form-input, .form-select { padding: 13px 14px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; color: var(--text); background: var(--surface2); outline: none; transition: border-color .2s; width: 100%; }
+.form-input:focus, .form-select:focus { border-color: var(--primary); }
+.form-select { appearance: none; }
+.demo-hint { background: #FEF3C7; border-radius: var(--radius-sm); padding: 12px; font-size: 12px; color: #92400E; line-height: 1.6; }
+.auth-footer { padding: 14px 20px 24px; }
+.btn-full { width: 100%; padding: 16px; border: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+/* HOME */
+#scHome { background: var(--bg); }
+.home-header { background: linear-gradient(135deg,#1E3A8A,#2563EB); padding: 20px 20px 28px; }
+.home-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.home-logo { font-size: 20px; font-weight: 800; color: white; }
+.home-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.25); color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; cursor: pointer; border: 2px solid rgba(255,255,255,.4); }
+.home-greeting { color: rgba(255,255,255,.8); font-size: 13px; margin-bottom: 2px; }
+.home-username { color: white; font-size: 20px; font-weight: 700; }
+.home-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 18px; }
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.stat-card { background: var(--surface); border-radius: var(--radius); padding: 14px 8px; text-align: center; box-shadow: var(--shadow-sm); }
+.stat-num { font-size: 20px; font-weight: 800; color: var(--primary); }
+.stat-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.section-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.section-link { font-size: 13px; color: var(--primary); font-weight: 600; cursor: pointer; }
+.services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.service-card { background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; flex-direction: column; gap: 6px; border: 2px solid transparent; transition: border-color .2s; }
+.service-card:active { border-color: var(--primary); }
+.svc-icon { font-size: 26px; }
+.svc-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.svc-price { font-size: 12px; color: var(--primary); font-weight: 600; }
+.svc-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: #DCFCE7; color: #15803D; }
+.orders-list { display: flex; flex-direction: column; gap: 10px; }
+.order-card { background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 12px; }
+.order-icon-wrap { width: 44px; height: 44px; border-radius: 12px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.order-info { flex: 1; }
+.order-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.order-date { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.status-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+.s-done { background: #DCFCE7; color: #15803D; }
+.s-pend { background: #FEF3C7; color: #92400E; }
+.s-prog { background: #DBEAFE; color: #1D4ED8; }
+
+/* BOTTOM NAV */
+.bottom-nav { height: 70px; background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: center; padding: 0 8px 8px; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 8px 4px; border-radius: 10px; }
+.nav-icon { font-size: 22px; opacity: .45; transition: opacity .2s; }
+.nav-label { font-size: 10px; color: var(--text3); font-weight: 500; }
+.nav-item.active .nav-icon { opacity: 1; }
+.nav-item.active .nav-label { color: var(--primary); font-weight: 700; }
+
+/* SERVICES SCREEN */
+#scServices { background: var(--bg); }
+.screen-header { background: var(--surface); padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.screen-header h2 { font-size: 20px; font-weight: 800; color: var(--text); }
+.screen-header p { font-size: 13px; color: var(--text3); margin-top: 2px; }
+.search-box { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 12px; }
+.search-box input { flex: 1; border: none; background: transparent; font-size: 14px; color: var(--text); outline: none; font-family: inherit; }
+.services-list { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.svc-list-card { background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; align-items: center; gap: 14px; }
+.svc-list-card:active { opacity: .85; }
+.svc-icon-wrap { width: 50px; height: 50px; border-radius: 12px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.svc-info { flex: 1; }
+.svc-n { font-size: 14px; font-weight: 700; color: var(--text); }
+.svc-d { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.svc-p { font-size: 14px; font-weight: 700; color: var(--primary); }
+
+/* SERVICE DETAIL */
+#scDetail { background: var(--bg); }
+.detail-hero { background: linear-gradient(135deg,#1E3A8A,#2563EB); padding: 24px 24px 28px; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
+.det-back { position: absolute; top: 16px; left: 16px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.2); border: none; cursor: pointer; color: white; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+.det-icon { font-size: 56px; }
+.det-name { font-size: 22px; font-weight: 800; color: white; text-align: center; }
+.det-cat { font-size: 13px; color: rgba(255,255,255,.7); }
+.detail-body { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.price-card { background: var(--surface); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between; }
+.price-big { font-size: 28px; font-weight: 800; color: var(--primary); }
+.price-lbl { font-size: 12px; color: var(--text3); }
+.avail-badge { background: #DCFCE7; color: #15803D; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.info-card { background: var(--surface); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 10px; }
+.info-card h4 { font-size: 14px; font-weight: 700; color: var(--text); }
+.info-card p { font-size: 14px; color: var(--text2); line-height: 1.6; }
+.specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.spec-item { background: var(--surface); border-radius: var(--radius-sm); padding: 12px; text-align: center; box-shadow: var(--shadow-sm); }
+.spec-val { font-size: 15px; font-weight: 700; color: var(--text); }
+.spec-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.detail-footer { padding: 0 18px 18px; }
+.btn-schedule { width: 100%; padding: 16px; border: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+/* CONTACT */
+#scContact { background: var(--bg); }
+.contact-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.contact-info-card { background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 14px; }
+.ci-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.bg-blue { background: #DBEAFE; } .bg-green { background: #DCFCE7; } .bg-purple { background: #EDE9FE; }
+.ci-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.ci-val { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.contact-form { background: var(--surface); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; }
+.contact-form h3 { font-size: 16px; font-weight: 700; color: var(--text); }
+.form-textarea { padding: 12px 14px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; color: var(--text); background: var(--surface2); outline: none; resize: none; min-height: 90px; width: 100%; }
+.form-textarea:focus { border-color: var(--primary); }
+
+/* PROFILE */
+#scProfile { background: var(--bg); }
+.profile-hero { background: linear-gradient(135deg,#1E3A8A,#7C3AED); padding: 30px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.profile-avatar-big { width: 76px; height: 76px; border-radius: 50%; background: rgba(255,255,255,.25); color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; border: 3px solid rgba(255,255,255,.5); }
+.profile-name { font-size: 20px; font-weight: 800; color: white; }
+.profile-role { background: rgba(255,255,255,.2); color: white; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.profile-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.profile-section { background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+.section-head { padding: 10px 16px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--border); }
+.profile-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); gap: 12px; }
+.profile-row:last-child { border-bottom: none; }
+.pr-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+.pr-info { flex: 1; }
+.pr-label { font-size: 14px; font-weight: 600; color: var(--text); }
+.pr-val { font-size: 12px; color: var(--text3); margin-top: 1px; }
+.pr-arrow { color: var(--text3); font-size: 16px; }
+.toggle { width: 44px; height: 24px; border-radius: 12px; background: var(--border); position: relative; cursor: pointer; transition: background .25s; flex-shrink: 0; }
+.toggle.on { background: var(--primary); }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform .25s; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.toggle.on::after { transform: translateX(20px); }
+.logout-btn { margin: 0 14px 14px; padding: 14px; background: #FEF2F2; border: 2px solid #FECACA; border-radius: 14px; color: var(--danger); font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+/* TOAST */
+.toast { position: absolute; bottom: 86px; left: 14px; right: 14px; background: #0F172A; color: white; padding: 12px 16px; border-radius: 14px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; transform: translateY(100px); opacity: 0; transition: all .3s cubic-bezier(.4,0,.2,1); z-index: 9999; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 420px) {
+  .phone { width: 100vw; height: 100vh; border-radius: 0; }
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="phone-notch"></div>
+  <div class="status-bar" id="statusBar" style="color:white">
+    <span id="statusTime">9:41</span>
+    <div class="status-icons"><span>WiFi</span><span>100%</span></div>
+  </div>
+  <div class="screen-wrap">
+
+    <!-- SPLASH -->
+    <div class="screen active" id="scSplash">
+      <div class="splash-logo">&#9889;</div>
+      <div class="splash-brand">ServisTech</div>
+      <div class="splash-sub">Servicio tecnico a tu alcance</div>
+      <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+    </div>
+
+    <!-- WELCOME -->
+    <div class="screen" id="scWelcome">
+      <div class="welcome-top">
+        <div class="welcome-icon">&#9889;</div>
+        <div class="welcome-title">Bienvenido a ServisTech</div>
+        <div class="welcome-desc">Tu servicio tecnico de confianza para electrodomesticos y electronicos.</div>
+      </div>
+      <div class="welcome-btns">
+        <button class="btn-white" onclick="goTo('scLogin')">Iniciar Sesion</button>
+        <button class="btn-outline" onclick="goTo('scRegister')">Registrarse</button>
+        <button class="btn-ghost" onclick="loginGuest()">Continuar como Invitado</button>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="screen" id="scLogin">
+      <div class="auth-header">
+        <button class="btn-back" onclick="goBack()">&#8592;</button>
+        <h2>Iniciar Sesion</h2>
+      </div>
+      <div class="auth-body">
+        <div class="form-group">
+          <label class="form-label">Correo electronico</label>
+          <input class="form-input" type="email" id="loginEmail" placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contrasena</label>
+          <input class="form-input" type="password" id="loginPass" placeholder="........">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de usuario</label>
+          <select class="form-select" id="loginType">
+            <option value="client">Cliente</option>
+            <option value="technician">Tecnico</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="demo-hint">
+          <strong>Usuarios de prueba:</strong>
+          admin@servistech.com / admin123 (Admin)<br>
+          tecnico@servistech.com / tecnico123 (Tecnico)<br>
+          cliente@servistech.com / cliente123 (Cliente)
+        </div>
+      </div>
+      <div class="auth-footer">
+        <button class="btn-full" onclick="doLogin()">Iniciar Sesion</button>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="screen" id="scRegister">
+      <div class="auth-header">
+        <button class="btn-back" onclick="goBack()">&#8592;</button>
+        <h2>Crear cuenta</h2>
+      </div>
+      <div class="auth-body">
+        <div class="form-group">
+          <label class="form-label">Nombre completo</label>
+          <input class="form-input" type="text" id="regName" placeholder="Tu nombre">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correo electronico</label>
+          <input class="form-input" type="email" id="regEmail" placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefono</label>
+          <input class="form-input" type="tel" id="regPhone" placeholder="300 123 4567">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contrasena</label>
+          <input class="form-input" type="password" id="regPass" placeholder="........">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de cuenta</label>
+          <select class="form-select" id="regType">
+            <option value="client">Cliente</option>
+            <option value="technician">Tecnico</option>
+          </select>
+        </div>
+      </div>
+      <div class="auth-footer">
+        <button class="btn-full" onclick="doRegister()">Crear cuenta</button>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="screen" id="scHome">
+      <div class="home-header">
+        <div class="home-top">
+          <div class="home-logo">ServisTech</div>
+          <div class="home-avatar" id="homeAvatar" onclick="setTab('profile')">A</div>
+        </div>
+        <div class="home-greeting">Buenos dias,</div>
+        <div class="home-username" id="homeUser">Usuario</div>
+      </div>
+      <div class="home-body">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num">120+</div><div class="stat-lbl">Clientes</div></div>
+          <div class="stat-card"><div class="stat-num">500+</div><div class="stat-lbl">Servicios</div></div>
+          <div class="stat-card"><div class="stat-num">24/7</div><div class="stat-lbl">Soporte</div></div>
+        </div>
+        <div>
+          <div class="section-header">
+            <span class="section-title">Servicios populares</span>
+            <span class="section-link" onclick="setTab('services')">Ver todos</span>
+          </div>
+          <div class="services-grid">
+            <div class="service-card" onclick="openDetail(0)"><div class="svc-icon">&#128295;</div><div class="svc-name">Reparacion</div><div class="svc-price">Desde $45.000</div><div class="svc-badge">Popular</div></div>
+            <div class="service-card" onclick="openDetail(1)"><div class="svc-icon">&#128187;</div><div class="svc-name">Soporte PC</div><div class="svc-price">Desde $35.000</div><div class="svc-badge">Disponible</div></div>
+            <div class="service-card" onclick="openDetail(2)"><div class="svc-icon">&#128274;</div><div class="svc-name">Seguridad</div><div class="svc-price">Desde $80.000</div><div class="svc-badge">Nuevo</div></div>
+            <div class="service-card" onclick="openDetail(3)"><div class="svc-icon">&#10052;</div><div class="svc-name">A/C y Neveras</div><div class="svc-price">Desde $60.000</div><div class="svc-badge">Disponible</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-header"><span class="section-title">Ordenes recientes</span></div>
+          <div class="orders-list">
+            <div class="order-card"><div class="order-icon-wrap">&#128295;</div><div class="order-info"><div class="order-name">Reparacion lavadora</div><div class="order-date">Hoy, 10:30 AM</div></div><div class="status-pill s-prog">En curso</div></div>
+            <div class="order-card"><div class="order-icon-wrap">&#128187;</div><div class="order-info"><div class="order-name">Mantenimiento PC</div><div class="order-date">Ayer, 3:15 PM</div></div><div class="status-pill s-done">Completado</div></div>
+            <div class="order-card"><div class="order-icon-wrap">&#10052;</div><div class="order-info"><div class="order-name">Revision A/C</div><div class="order-date">Lun 3 Mar</div></div><div class="status-pill s-pend">Pendiente</div></div>
+          </div>
+        </div>
+        <div style="height:8px"></div>
+      </div>
+      <div class="bottom-nav" id="bnHome">
+        <div class="nav-item active" id="n1h" onclick="setTab('home')"><div class="nav-icon">&#127968;</div><div class="nav-label">Inicio</div></div>
+        <div class="nav-item" id="n1s" onclick="setTab('services')"><div class="nav-icon">&#128295;</div><div class="nav-label">Servicios</div></div>
+        <div class="nav-item" id="n1c" onclick="setTab('contact')"><div class="nav-icon">&#9993;</div><div class="nav-label">Contacto</div></div>
+        <div class="nav-item" id="n1p" onclick="setTab('profile')"><div class="nav-icon">&#128100;</div><div class="nav-label">Perfil</div></div>
+      </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="screen" id="scServices">
+      <div class="screen-header">
+        <h2>Servicios</h2>
+        <p>Encuentra el servicio que necesitas</p>
+        <div class="search-box">
+          <span>&#128269;</span>
+          <input type="text" placeholder="Buscar servicio..." oninput="filterSvcs(this.value)">
+        </div>
+      </div>
+      <div class="services-list" id="svcList"></div>
+      <div class="bottom-nav">
+        <div class="nav-item" id="n2h" onclick="setTab('home')"><div class="nav-icon">&#127968;</div><div class="nav-label">Inicio</div></div>
+        <div class="nav-item active" id="n2s" onclick="setTab('services')"><div class="nav-icon">&#128295;</div><div class="nav-label">Servicios</div></div>
+        <div class="nav-item" id="n2c" onclick="setTab('contact')"><div class="nav-icon">&#9993;</div><div class="nav-label">Contacto</div></div>
+        <div class="nav-item" id="n2p" onclick="setTab('profile')"><div class="nav-icon">&#128100;</div><div class="nav-label">Perfil</div></div>
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="screen" id="scDetail">
+      <div class="detail-hero">
+        <button class="det-back" onclick="goBack()">&#8592;</button>
+        <div class="det-icon" id="dIcon"></div>
+        <div class="det-name" id="dName"></div>
+        <div class="det-cat" id="dCat"></div>
+      </div>
+      <div class="detail-body">
+        <div class="price-card">
+          <div><div class="price-big" id="dPrice"></div><div class="price-lbl">Precio desde</div></div>
+          <div class="avail-badge">Disponible</div>
+        </div>
+        <div class="info-card"><h4>Descripcion</h4><p id="dDesc"></p></div>
+        <div class="specs-grid">
+          <div class="spec-item"><div class="spec-val" id="dTime"></div><div class="spec-lbl">Tiempo est.</div></div>
+          <div class="spec-item"><div class="spec-val">4.9 / 5</div><div class="spec-lbl">Calificacion</div></div>
+          <div class="spec-item"><div class="spec-val">30 dias</div><div class="spec-lbl">Garantia</div></div>
+          <div class="spec-item"><div class="spec-val">Domicilio</div><div class="spec-lbl">Modalidad</div></div>
+        </div>
+      </div>
+      <div class="detail-footer">
+        <button class="btn-schedule" onclick="scheduleOk()">Agendar servicio</button>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="screen" id="scContact">
+      <div class="screen-header"><h2>Contacto</h2><p>Estamos para ayudarte</p></div>
+      <div class="contact-body">
+        <div class="contact-info-card"><div class="ci-icon bg-blue">&#128222;</div><div><div class="ci-title">Llamanos</div><div class="ci-val">300 123 4567 | Lun-Sab 8am-6pm</div></div></div>
+        <div class="contact-info-card"><div class="ci-icon bg-green">&#128172;</div><div><div class="ci-title">WhatsApp</div><div class="ci-val">300 123 4567 | Respuesta inmediata</div></div></div>
+        <div class="contact-info-card"><div class="ci-icon bg-purple">&#9993;</div><div><div class="ci-title">Email</div><div class="ci-val">soporte@servistech.com</div></div></div>
+        <div class="contact-form">
+          <h3>Enviar mensaje</h3>
+          <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="ctName" placeholder="Tu nombre"></div>
+          <div class="form-group"><label class="form-label">Correo</label><input class="form-input" type="email" id="ctEmail" placeholder="tu@correo.com"></div>
+          <div class="form-group"><label class="form-label">Mensaje</label><textarea class="form-textarea" id="ctMsg" placeholder="Describe tu problema..."></textarea></div>
+          <button class="btn-full" onclick="sendMsg()">Enviar mensaje</button>
+        </div>
+        <div style="height:8px"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" id="n3h" onclick="setTab('home')"><div class="nav-icon">&#127968;</div><div class="nav-label">Inicio</div></div>
+        <div class="nav-item" id="n3s" onclick="setTab('services')"><div class="nav-icon">&#128295;</div><div class="nav-label">Servicios</div></div>
+        <div class="nav-item active" id="n3c" onclick="setTab('contact')"><div class="nav-icon">&#9993;</div><div class="nav-label">Contacto</div></div>
+        <div class="nav-item" id="n3p" onclick="setTab('profile')"><div class="nav-icon">&#128100;</div><div class="nav-label">Perfil</div></div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="scProfile">
+      <div class="profile-hero">
+        <div class="profile-avatar-big" id="pAvatar">A</div>
+        <div class="profile-name" id="pName">Usuario</div>
+        <div class="profile-role" id="pRole">Cliente</div>
+      </div>
+      <div class="profile-body">
+        <div class="profile-section">
+          <div class="section-head">Informacion personal</div>
+          <div class="profile-row"><div class="pr-icon">&#128231;</div><div class="pr-info"><div class="pr-label">Correo</div><div class="pr-val" id="pEmail">---</div></div><div class="pr-arrow">&#8250;</div></div>
+          <div class="profile-row"><div class="pr-icon">&#128241;</div><div class="pr-info"><div class="pr-label">Telefono</div><div class="pr-val">300 123 4567</div></div><div class="pr-arrow">&#8250;</div></div>
+          <div class="profile-row"><div class="pr-icon">&#128273;</div><div class="pr-info"><div class="pr-label">Contrasena</div><div class="pr-val">Cambiar contrasena</div></div><div class="pr-arrow">&#8250;</div></div>
+        </div>
+        <div class="profile-section">
+          <div class="section-head">Preferencias</div>
+          <div class="profile-row"><div class="pr-icon">&#128276;</div><div class="pr-info"><div class="pr-label">Notificaciones</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="profile-row"><div class="pr-icon">&#127769;</div><div class="pr-info"><div class="pr-label">Modo oscuro</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          <div class="profile-row"><div class="pr-icon">&#128205;</div><div class="pr-info"><div class="pr-label">Compartir ubicacion</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="profile-section">
+          <div class="section-head">Acerca de</div>
+          <div class="profile-row"><div class="pr-icon">&#8505;</div><div class="pr-info"><div class="pr-label">Version</div><div class="pr-val">1.0.0 (build 4)</div></div></div>
+          <div class="profile-row"><div class="pr-icon">&#128196;</div><div class="pr-info"><div class="pr-label">Terminos y condiciones</div></div><div class="pr-arrow">&#8250;</div></div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Cerrar sesion</button>
+        <div style="height:8px"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item" id="n4h" onclick="setTab('home')"><div class="nav-icon">&#127968;</div><div class="nav-label">Inicio</div></div>
+        <div class="nav-item" id="n4s" onclick="setTab('services')"><div class="nav-icon">&#128295;</div><div class="nav-label">Servicios</div></div>
+        <div class="nav-item" id="n4c" onclick="setTab('contact')"><div class="nav-icon">&#9993;</div><div class="nav-label">Contacto</div></div>
+        <div class="nav-item active" id="n4p" onclick="setTab('profile')"><div class="nav-icon">&#128100;</div><div class="nav-label">Perfil</div></div>
+      </div>
+    </div>
+
+  </div><!-- /screen-wrap -->
+  <div class="toast" id="toast"><span id="tIcon"></span><span id="tMsg"></span></div>
+</div>
+
+<script>
+var SVCS = [
+  {icon:"&#128295;",name:"Reparacion de electrodomesticos",cat:"Reparacion",price:"$45.000",time:"1-3 hrs",desc:"Diagnostico y reparacion de lavadoras, neveras, hornos y demas electrodomesticos del hogar. Tecnicos certificados con repuestos originales."},
+  {icon:"&#128187;",name:"Soporte informatico",cat:"Tecnologia",price:"$35.000",time:"1-2 hrs",desc:"Mantenimiento preventivo y correctivo de computadores, instalacion de software, eliminacion de virus y optimizacion de rendimiento."},
+  {icon:"&#128274;",name:"Seguridad y CCTV",cat:"Seguridad",price:"$80.000",time:"2-4 hrs",desc:"Instalacion y configuracion de camaras de seguridad, sistemas de alarma y control de acceso para hogares y negocios."},
+  {icon:"&#10052;",name:"Aire acondicionado y neveras",cat:"Climatizacion",price:"$60.000",time:"2-3 hrs",desc:"Mantenimiento, recarga de gas y reparacion de aires acondicionados, neveras y congeladores de todas las marcas."},
+  {icon:"&#128250;",name:"Reparacion de pantallas y TV",cat:"Electronica",price:"$55.000",time:"1-2 hrs",desc:"Reparacion de televisores, monitores y pantallas. Cambio de modulo de pantalla, tarjetas de control y fuentes de poder."},
+  {icon:"&#128268;",name:"Instalaciones electricas",cat:"Electrica",price:"$50.000",time:"2-5 hrs",desc:"Instalacion y reparacion de cableado electrico, tomacorrientes, tableros electricos y sistemas de iluminacion."},
+  {icon:"&#128703;",name:"Plomeria y gasodomesticos",cat:"Plomeria",price:"$40.000",time:"1-3 hrs",desc:"Reparacion de fugas, calentadores de agua, estufas de gas y conexiones de gasodomesticos del hogar."},
+  {icon:"&#128241;",name:"Reparacion celulares",cat:"Moviles",price:"$30.000",time:"30-90 min",desc:"Cambio de pantalla, bateria, camara y componentes de smartphones Android e iOS. Revision sin costo."}
+];
+
+var USERS = {
+  "admin@servistech.com":   {pass:"admin123",   type:"admin",       name:"Administrador"},
+  "tecnico@servistech.com": {pass:"tecnico123", type:"technician",  name:"Juan Tecnico"},
+  "cliente@servistech.com": {pass:"cliente123", type:"client",      name:"Maria Cliente"}
+};
+
+var currentUser = null;
+var history = [];
+
+function goTo(id) {
+  var cur = document.querySelector('.screen.active');
+  if (cur && cur.id !== id) {
+    history.push(cur.id);
+    cur.classList.add('exit');
+    setTimeout(function(){ cur.classList.remove('exit','active'); }, 330);
+  }
+  document.getElementById(id).classList.add('active');
+  updateBar(id);
+}
+
+function goBack() {
+  if (!history.length) return;
+  var prev = history.pop();
+  var cur = document.querySelector('.screen.active');
+  if (cur) cur.classList.remove('active');
+  document.getElementById(prev).classList.add('active');
+  updateBar(prev);
+}
+
+function updateBar(id) {
+  var dark = ['scSplash','scWelcome','scLogin','scRegister'];
+  document.getElementById('statusBar').style.color = dark.indexOf(id) >= 0 ? 'white' : '#0F172A';
+}
+
+var TAB_MAP = {home:'scHome', services:'scServices', contact:'scContact', profile:'scProfile'};
+function setTab(tab) {
+  ['scHome','scServices','scContact','scProfile'].forEach(function(s){ document.getElementById(s).classList.remove('active'); });
+  document.getElementById(TAB_MAP[tab]).classList.add('active');
+  updateBar(TAB_MAP[tab]);
+  history = [];
+  for (var i=1; i<=4; i++) {
+    ['home','services','contact','profile'].forEach(function(t){
+      var el = document.getElementById('n'+i+t.charAt(0));
+      if (el) el.classList.toggle('active', t===tab);
+    });
+  }
+}
+
+function doLogin() {
+  var e = document.getElementById('loginEmail').value.trim();
+  var p = document.getElementById('loginPass').value;
+  var t = document.getElementById('loginType').value;
+  if (!e || !p) { toast('error','Completa todos los campos'); return; }
+  var u = USERS[e];
+  if (!u || u.pass !== p || u.type !== t) { toast('error','Credenciales incorrectas'); return; }
+  loginOk({name:u.name, email:e, type:u.type});
+}
+
+function doRegister() {
+  var n = document.getElementById('regName').value.trim();
+  var e = document.getElementById('regEmail').value.trim();
+  var p = document.getElementById('regPass').value;
+  if (!n || !e || !p) { toast('error','Completa todos los campos'); return; }
+  loginOk({name:n, email:e, type:document.getElementById('regType').value});
+}
+
+function loginGuest() {
+  loginOk({name:'Invitado', email:'invitado@servistech.com', type:'guest'});
+}
+
+function loginOk(u) {
+  currentUser = u;
+  var roles = {admin:'Administrador', technician:'Tecnico', client:'Cliente', guest:'Invitado'};
+  document.getElementById('homeAvatar').textContent = u.name.charAt(0).toUpperCase();
+  document.getElementById('homeUser').textContent = u.name;
+  document.getElementById('pAvatar').textContent = u.name.charAt(0).toUpperCase();
+  document.getElementById('pName').textContent = u.name;
+  document.getElementById('pRole').textContent = roles[u.type] || 'Invitado';
+  document.getElementById('pEmail').textContent = u.email;
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active','exit'); });
+  document.getElementById('scHome').classList.add('active');
+  updateBar('scHome');
+  history = [];
+  toast('ok','Bienvenido, ' + u.name.split(' ')[0] + '!');
+}
+
+function doLogout() {
+  currentUser = null;
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active','exit'); });
+  document.getElementById('scWelcome').classList.add('active');
+  updateBar('scWelcome');
+  history = [];
+}
+
+function renderSvcs(list) {
+  document.getElementById('svcList').innerHTML = list.map(function(s,i){
+    return '<div class="svc-list-card" onclick="openDetail('+SVCS.indexOf(s)+')">'+
+      '<div class="svc-icon-wrap">'+s.icon+'</div>'+
+      '<div class="svc-info"><div class="svc-n">'+s.name+'</div><div class="svc-d">'+s.cat+' &middot; '+s.time+'</div></div>'+
+      '<div style="text-align:right"><div class="svc-p">'+s.price+'</div><div style="color:#94A3B8;font-size:16px">&#8250;</div></div>'+
+      '</div>';
+  }).join('');
+}
+
+function filterSvcs(q) {
+  var r = q ? SVCS.filter(function(s){ return s.name.toLowerCase().indexOf(q.toLowerCase())>=0 || s.cat.toLowerCase().indexOf(q.toLowerCase())>=0; }) : SVCS;
+  renderSvcs(r);
+}
+
+function openDetail(i) {
+  var s = SVCS[i];
+  document.getElementById('dIcon').innerHTML = s.icon;
+  document.getElementById('dName').textContent = s.name;
+  document.getElementById('dCat').textContent = s.cat;
+  document.getElementById('dPrice').textContent = s.price;
+  document.getElementById('dDesc').textContent = s.desc;
+  document.getElementById('dTime').textContent = s.time;
+  goTo('scDetail');
+}
+
+function scheduleOk() { toast('ok','Servicio agendado exitosamente'); setTimeout(goBack, 1600); }
+
+function sendMsg() {
+  var n=document.getElementById('ctName').value.trim();
+  var e=document.getElementById('ctEmail').value.trim();
+  var m=document.getElementById('ctMsg').value.trim();
+  if(!n||!e||!m){ toast('error','Completa todos los campos'); return; }
+  document.getElementById('ctName').value='';
+  document.getElementById('ctEmail').value='';
+  document.getElementById('ctMsg').value='';
+  toast('ok','Mensaje enviado! Te contactaremos pronto.');
+}
+
+var toastT;
+function toast(type, msg) {
+  var el = document.getElementById('toast');
+  document.getElementById('tIcon').textContent = type==='ok' ? '✓' : '!';
+  document.getElementById('tMsg').textContent = msg;
+  el.style.background = type==='ok' ? '#0F172A' : '#7F1D1D';
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ el.classList.remove('show'); }, 2800);
+}
+
+function tick() {
+  var d=new Date(); var h=d.getHours(); var m=d.getMinutes();
+  document.getElementById('statusTime').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+}
+tick(); setInterval(tick, 30000);
+
+renderSvcs(SVCS);
+setTimeout(function(){
+  document.getElementById('scSplash').classList.remove('active');
+  document.getElementById('scWelcome').classList.add('active');
+  updateBar('scWelcome');
+}, 2400);
+</script>
+</body>
+</html>
